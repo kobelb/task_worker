@@ -7,10 +7,10 @@ const app = express();
 const port = 3000;
 
 const tenantId = "foo";
+const workerId = uuid.v4();
 
 const totalCapacity = 10;
 var runningTasksCount = 0;
-const workerId = uuid.v4();
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * max);
@@ -37,20 +37,22 @@ function startHeartbeat() {
 
     setInterval(() => {
         heartbeat()
-    }, 10000);
+    }, 30000);
     heartbeat();
 }
 
 async function taskDone(taskId) {
     const body = JSON.stringify({
         id: taskId,
-        tenant_id: tenantId
+        tenant_id: tenantId,
+        worker_id: workerId,
     });
     try {
         const response = await fetch(`http://localhost:1323/task/_done`, { method: 'POST', body, headers: { 'Content-Type': 'application/json'} });
         if (response.status != 200) {
             console.error(`Expected 200 status code, received ${response.status}: ${JSON.stringify(await response.json())}`)
         }
+        runningTasksCount -= 1;
     } catch (err) {
         console.error(err);
     }
