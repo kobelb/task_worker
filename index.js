@@ -59,13 +59,31 @@ async function taskDone(taskId) {
     }
 }
 
+async function taskFailure(taskId) {
+    const body = JSON.stringify({
+        id: taskId,
+        tenant_id: tenantId,
+        worker_id: workerId,
+        schedule_at: new Date(new Date().getTime() + 60000).toISOString()
+    });
+    try {
+        const response = await fetch(`http://localhost:1323/task/_failure`, { method: 'POST', body, headers: { 'Content-Type': 'application/json'} });
+        if (response.status != 200) {
+            console.error(`Expected 200 status code, received ${response.status}: ${JSON.stringify(await response.json())}`)
+        }
+        runningTasks.delete(taskId)
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 function runTask(body) {
     const { task_id: taskId, params } = body;
-    console.log('running task', { taskId });
+    console.log(new Date(), 'running task', { taskId });
     runningTasks.add(taskId);
     setTimeout(() => {
-        taskDone(taskId);
-    }, 60000);
+        taskFailure(taskId);
+    }, 1000);
 }
 
 app.use(bodyParser.json());
