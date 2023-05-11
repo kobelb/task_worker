@@ -6,20 +6,23 @@ const app = express();
 const port = 3000;
 
 const totalCapacity = 10;
-const runningTasksCount = 0;
+var runningTasksCount = 0;
 const workerId = uuid.v4();
 
 function startHeartbeat() {
     async function heartbeat () {
-        const body = {
+        const body = JSON.stringify({
             id: workerId,
             tenant_id: "foo",
             url: 'http://localhost:3000/run_task',
             total_capacity: totalCapacity,
             available_capacity: totalCapacity - runningTasksCount
-        };
+        });
         try {
-            await fetch(`http://localhost:1323/worker_heartbeat`, { method: 'POST', body });
+            const response = await fetch(`http://localhost:1323/worker_heartbeat`, { method: 'POST', body, headers: { 'Content-Type': 'application/json'} });
+            if (response.status != 200) {
+                console.error(`Expected 200 status code, received ${response.status}: ${JSON.stringify(await response.json())}`)
+            }
         } catch (err) {
             console.error(err);
         }
@@ -32,7 +35,8 @@ function startHeartbeat() {
 } 
 
 app.post('/run_task', (req, res) => {
-  
+    runningTasksCount += 1;
+    console.log('running task')
 })
 
 app.listen(port, () => {
