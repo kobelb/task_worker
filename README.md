@@ -4,3 +4,4 @@
 [ ] Task Completion
 [ ] Schedule large number of recurring tasks on startup
 [ ] Load tests
+[ ] Task done retries
