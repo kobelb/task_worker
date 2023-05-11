@@ -37,6 +37,7 @@ function startHeartbeat() {
 app.post('/run_task', (req, res) => {
     runningTasksCount += 1;
     console.log('running task')
+    res.send();
 })
 
 app.listen(port, () => {
