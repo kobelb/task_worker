@@ -10,11 +10,12 @@ const tenantId = "foo";
 const workerId = uuid.v4();
 
 const totalCapacity = 10;
-var runningTasksCount = 0;
+
+const runningTasks = new Set();
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * max);
-  }
+}
 
 function startHeartbeat() {
     async function heartbeat () {
@@ -23,7 +24,7 @@ function startHeartbeat() {
             tenant_id: tenantId,
             url: 'http://localhost:3000/run_task',
             total_capacity: totalCapacity,
-            available_capacity: totalCapacity - runningTasksCount
+            running_tasks: Array.from(runningTasks),
         });
         try {
             const response = await fetch(`http://localhost:1323/worker_heartbeat`, { method: 'POST', body, headers: { 'Content-Type': 'application/json'} });
@@ -37,7 +38,7 @@ function startHeartbeat() {
 
     setInterval(() => {
         heartbeat()
-    }, 30000);
+    }, 10000);
     heartbeat();
 }
 
@@ -52,7 +53,7 @@ async function taskDone(taskId) {
         if (response.status != 200) {
             console.error(`Expected 200 status code, received ${response.status}: ${JSON.stringify(await response.json())}`)
         }
-        runningTasksCount -= 1;
+        runningTasks.delete(taskId)
     } catch (err) {
         console.error(err);
     }
@@ -60,16 +61,16 @@ async function taskDone(taskId) {
 
 function runTask(body) {
     const { task_id: taskId, params } = body;
-    console.log('running task', { taskId, params });
+    console.log('running task', { taskId });
+    runningTasks.add(taskId);
     setTimeout(() => {
         taskDone(taskId);
-    }, getRandomInt(2000));
+    }, 60000);
 }
 
 app.use(bodyParser.json());
 
 app.post('/run_task', (req, res) => {
-    runningTasksCount += 1;
     runTask(req.body);
     res.send();
 });
