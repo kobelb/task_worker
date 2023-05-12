@@ -12,6 +12,12 @@ const workerId = uuid.v4();
 
 const runningTasks = new Set();
 
+const { HOSTNAME } = process.env;
+if (HOSTNAME == null) {
+    console.error(`HOSTNAME environment variable should be set`);
+    return;
+}
+
 const PORT = parseInt(process.env.PORT, 10);
 if (isNaN(PORT)) {
     console.error(`PORT environment variable should be set to an integer`);
@@ -53,7 +59,7 @@ function startHeartbeat() {
         const body = JSON.stringify({
             id: workerId,
             tenant_id: TENANT,
-            url: `http://localhost:${PORT}/run_task`,
+            url: `http://${HOSTNAME}:${PORT}/run_task`,
             total_capacity: TOTAL_CAPACITY,
             running_tasks: Array.from(runningTasks),
         });
