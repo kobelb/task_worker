@@ -13,10 +13,6 @@ const workerId = uuid.v4();
 
 const runningTasks = new Set();
 
-function getRandomInt(max) {
-    return Math.floor(Math.random() * max);
-}
-
 const { TASK_MANAGER_URL } = process.env;
 if (TASK_MANAGER_URL == null) {
     console.error(`TASK_MANAGER_URL environment variable should be set`);
@@ -110,7 +106,7 @@ async function taskFailure(taskId) {
 runTaskRandomized = random.randomPareto(2);
 function runTask(body) {
     const { task_id: taskId, params } = body;
-    console.log(new Date(), 'running task', { taskId });
+    console.log(new Date(), 'running task', { taskId, params });
     runningTasks.add(taskId);
     setTimeout(() => {
         if (Math.random() <= RUN_FAILURE_RATE) {
