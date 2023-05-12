@@ -7,11 +7,16 @@ const random = require('d3-random')
 const uuid = require('uuid');
 
 const app = express();
-const port = 3000;
 
 const workerId = uuid.v4();
 
 const runningTasks = new Set();
+
+const PORT = parseInt(process.env.PORT, 10);
+if (isNaN(PORT)) {
+    console.error(`PORT environment variable should be set to an integer`);
+    return; 
+}
 
 const { TASK_MANAGER_URL } = process.env;
 if (TASK_MANAGER_URL == null) {
@@ -48,7 +53,7 @@ function startHeartbeat() {
         const body = JSON.stringify({
             id: workerId,
             tenant_id: TENANT,
-            url: 'http://localhost:3000/run_task',
+            url: `http://localhost:${PORT}/run_task`,
             total_capacity: TOTAL_CAPACITY,
             running_tasks: Array.from(runningTasks),
         });
@@ -125,8 +130,8 @@ app.post('/run_task', (req, res) => {
     res.send();
 });
 
-app.listen(port, () => {
-  console.log(`App listening on port ${port}`)
+app.listen(PORT, () => {
+  console.log(`App listening on port ${PORT}`)
 });
 
 startHeartbeat();
