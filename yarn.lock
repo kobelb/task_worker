@@ -86,6 +86,11 @@
   "resolved" "https://registry.npmjs.org/cookie/-/cookie-0.5.0.tgz"
   "version" "0.5.0"
 
+"d3-random@^2.2.2":
+  "integrity" "sha512-0D9P8TRj6qDAtHhRQn6EfdOtHMfsUWanl3yb/84C4DqpZ+VsgfI5iTVRNRbELCfNvRfpMr8OrqqUTQ6ANGCijw=="
+  "resolved" "https://registry.npmjs.org/d3-random/-/d3-random-2.2.2.tgz"
+  "version" "2.2.2"
+
 "debug@2.6.9":
   "integrity" "sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA=="
   "resolved" "https://registry.npmjs.org/debug/-/debug-2.6.9.tgz"

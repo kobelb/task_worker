@@ -3,6 +3,7 @@ require('dotenv').config();
 const bodyParser = require('body-parser')
 const express = require('express');
 const fetch = require('node-fetch');
+const random = require('d3-random')
 const uuid = require('uuid');
 
 const app = express();
@@ -30,7 +31,19 @@ if (TENANT == null) {
 
 const TOTAL_CAPACITY = parseInt(process.env.TOTAL_CAPACITY, 10);
 if (isNaN(TOTAL_CAPACITY)) {
-    console.error(`TOTAL_CAPACITY environment variable should be set to an number`);
+    console.error(`TOTAL_CAPACITY environment variable should be set to an integer`);
+    return;
+}
+
+const RUN_DURATION_MINIMUM_MS = parseFloat(process.env.RUN_DURATION_MINIMUM_MS);
+if (isNaN(RUN_DURATION_MINIMUM_MS)) {
+    console.error(`RUN_DURATION_MINIMUM_MS environment variable should be set to a float`);
+    return;
+}
+
+const RUN_FAILURE_RATE = parseFloat(process.env.RUN_FAILURE_RATE);
+if (isNaN(RUN_FAILURE_RATE)) {
+    console.error(`RUN_FAILURE_RATE environment variable should be set to a float`);
     return;
 }
 
@@ -81,7 +94,7 @@ async function taskFailure(taskId) {
         id: taskId,
         tenant_id: TENANT,
         worker_id: workerId,
-        schedule_at: new Date(new Date().getTime() + 60000).toISOString()
+        schedule_at: new Date(new Date().getTime() + 5000).toISOString()
     });
     try {
         const response = await fetch(`${TASK_MANAGER_URL}/task/_failure`, { method: 'POST', body, headers: { 'Content-Type': 'application/json'} });
@@ -94,22 +107,26 @@ async function taskFailure(taskId) {
     }
 }
 
+runTaskRandomized = random.randomPareto(2);
 function runTask(body) {
     const { task_id: taskId, params } = body;
     console.log(new Date(), 'running task', { taskId });
     runningTasks.add(taskId);
     setTimeout(() => {
-        taskDone(taskId);
-    }, getRandomInt(2000));
+        if (Math.random() <= RUN_FAILURE_RATE) {
+            console.log(new Date(), 'failing task', { taskId });
+            taskFailure(taskId);
+        } else {
+            taskDone(taskId);
+        }
+    }, runTaskRandomized() * RUN_DURATION_MINIMUM_MS);
 }
 
 app.use(bodyParser.json());
 
 app.post('/run_task', (req, res) => {
     runTask(req.body);
-    setTimeout(() => {
-        res.send();
-    }, 30000);
+    res.send();
 });
 
 app.listen(port, () => {
