@@ -116,8 +116,8 @@ async function taskFailure(taskId) {
 
 runTaskRandomized = random.randomPareto(2);
 function runTask(body) {
-    const { task_id: taskId, params } = body;
-    console.log(new Date(), 'running task', { taskId, params });
+    const { task_id: taskId, params, schedule_at: scheduleAt } = body;
+    console.log(new Date(), 'running task', { taskId, params, delay: new Date() - new Date(scheduleAt)});
     runningTasks.add(taskId);
     setTimeout(() => {
         if (Math.random() <= RUN_FAILURE_RATE) {
